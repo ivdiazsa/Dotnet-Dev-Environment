@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <Configuration>Release</Configuration>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutDir>app/</OutDir>
+    <BaseIntermediateOutputPath>obj/</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+  <Target Name="BuildApp"
+          DependsOnTargets="Restore">
+    <RemoveDir Directories="$(OutDir)" />
+    <MSBuild Projects="$(MSBuildProjectFile)" Targets="Build" />
+    <RemoveDir Directories="$(BaseIntermediateOutputPath)" />
+  </Target>
+</Project>
