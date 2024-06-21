@@ -13,10 +13,15 @@ internal static class ArgsParser
         switch (command)
         {
             case "add_repo":
-                ParseAddRepoOpts(args, result);
+            case "set_repo":
+                ParseAddSetRepoOpts(args, result);
                 break;
 
             case "list_repos":
+                break;
+
+            case "build_runtime":
+                ParseBuildRuntimeOpts(args, result);
                 break;
 
             default:
@@ -29,15 +34,15 @@ internal static class ArgsParser
         return result;
     }
 
-    private static void ParseAddRepoOpts(string[] args,
-                                         Dictionary<string, string> result)
+    // FIXME: Add special handling for when we receive flags without their
+    //        respective expected values.
+
+    private static void ParseAddSetRepoOpts(string[] args,
+                                            Dictionary<string, string> result)
     {
         int it = 1;
         string name = string.Empty;
         string path = string.Empty;
-
-        // FIXME: Add special handling for when we receive flags without their
-        //        respective expected values.
 
         while (true)
         {
@@ -63,5 +68,21 @@ internal static class ArgsParser
 
         result.Add("name", name);
         result.Add("path", path);
+    }
+
+    private static void ParseBuildRuntimeOpts(string[] args,
+                                              Dictionary<string, string> result)
+    {
+        string repo = string.Empty;
+
+        if (args[1] != "-r" && args[1] != "--repo")
+        {
+            throw new ArgumentException(
+                $"BuildRuntime: Got an unrecognized option '{args[1]}' :("
+            );
+        }
+
+        result.Add("repo", args[2]);
+        result.Add("args", string.Join(' ', args[3..]));
     }
 }
