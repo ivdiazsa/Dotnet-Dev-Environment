@@ -12,12 +12,21 @@ DEVENV_APP="$DEVENV_ENG_PATH/app/DevEnvEngine"
 dotnet msbuild "$DEVENV_ENG_PATH/DevEnvEngine.csproj" -t:BuildApp
 
 function addrepo {
-    local repo_env_value=$($DEVENV_APP add_repo "$@")
+    local new_repo_kvp;
+    local devenv_code;
 
-    if [ -z "$DEV_REPOS" ]; then
-        export DEV_REPOS="$repo_env_value"
+    new_repo_kvp=$($DEVENV_APP add_repo "$@")
+    devenv_code=$?
+
+    if [[ "$devenv_code" != "0" ]]; then
+        echo $new_repo_kvp
+        return -1
+    fi
+
+    if [[ -z "$DEV_REPOS" ]]; then
+        export DEV_REPOS="$new_repo_kvp"
     else
-        export DEV_REPOS="$DEV_REPOS:$repo_env_value"
+        export DEV_REPOS="$DEV_REPOS:$new_repo_kvp"
     fi
 }
 
@@ -26,27 +35,17 @@ function listrepos {
 }
 
 function setrepo {
-    local repo_path=$($DEVENV_APP set_repo "$@")
-    export WORK_REPO="$repo_path"
+    echo 'Set_Repo under construction!'
 }
 
-function buildruntime {
-    local build_cmdline=$($DEVENV_APP build_runtime "$@")
-    echo "$build_cmdline" | bash
+function buildsubsets {
+    echo 'Build_Subsets under construction!'
 }
 
 function buildtests {
-    echo 'Build_Tests is under construction!'
+    echo 'Build_Tests under construction!'
 }
 
 function generatelayout {
-    echo 'Generate_Layout is under construction!'
-}
-
-function getcorerun {
-    echo 'Get_Corerun is under construction!'
-}
-
-function persistsettings {
-    echo 'Persist_Settings is under construction!'
+    echo 'Generate_Layout under construction!'
 }

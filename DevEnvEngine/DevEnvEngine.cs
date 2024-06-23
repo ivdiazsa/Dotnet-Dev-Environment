@@ -1,49 +1,36 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
 namespace DevEnvEngine;
 
-public class DevEnvEngine
+internal static class DevEnvEngine
 {
     const string DEV_REPOS_ENV_VAR = "DEV_REPOS";
-    const string WORK_REPO_ENV_VAR = "WORK_REPO";
 
-    static int Main(string[] args)
+    public static int FnAddRepo(string[] args)
     {
-        Dictionary<string, string> engParams = ArgsParser.Run(args);
-
-        switch (engParams["command"])
+        if (args.Length < 2)
         {
-            case "add_repo":
-                FnAddRepo(engParams["name"], engParams["path"]);
-                break;
-
-            case "list_repos":
-                FnListRepos();
-                break;
-
-            case "build_runtime":
-                FnBuildRuntime(engParams["repo"], engParams["args"]);
-                break;
-
-            case "set_repo":
-                FnSetRepo(engParams["name"]);
-                break;
+            Console.WriteLine("A name to identify the repo and the path where it"
+                              + " is located are required.");
+            return -1;
         }
 
+        string key = args[0].ToLower();
+        string path = Path.GetFullPath(args[1]);
+
+        if (!Directory.Exists(path))
+        {
+            Console.WriteLine($"The given path '{path}' was not found :(");
+            return -1;
+        }
+
+        Console.WriteLine($"{key},\"{path}\"");
         return 0;
     }
 
-    static void FnAddRepo(string name, string path)
-    {
-        string lName = name.ToLower();
-        string absPath = Path.GetFullPath(path);
-        Console.WriteLine($"{lName},\"{absPath}\"");
-    }
-
-    static void FnListRepos()
+    public static void FnListRepos()
     {
         string repos = Environment.GetEnvironmentVariable(DEV_REPOS_ENV_VAR);
 
@@ -55,38 +42,29 @@ public class DevEnvEngine
 
         foreach (string r in repos.Split(':'))
         {
-            string[] rinfo = r.Split(',');
-            Console.WriteLine($"{rinfo[0]}, {rinfo[1]}");
+            string[] repoInfo = r.Split(',');
+            string repoKey = repoInfo[0];
+            string repoPath = repoInfo[1];
+            Console.WriteLine($"{repoKey}, {repoPath}");
         }
     }
 
-    static void FnSetRepo(string repoName)
+    public static int FnSetRepo(string[] args)
     {
-        IEnumerable<string[]> repos =
-            Environment.GetEnvironmentVariable(DEV_REPOS_ENV_VAR)
-                       .Split(':')
-                       .Select(r => r.Split(','));
+        if (args.Length < 1)
+        {
+            Console.WriteLine("The path to the repo, or its key if it has been"
+                              + " added previously with 'addrepo', is required.");
+            return -1;
+        }
 
-        string setPath = repos.FirstOrDefault(r => r[0] == repoName.ToLower())[1];
-        Console.WriteLine(setPath);
-    }
+        // Two possibilities:
+        // 1)- Get the key of an already stored repo.
+        // 2)- Get the path of a repo, and optionally a key to store it.
 
-    static void FnBuildRuntime(string repo, string buildArgs)
-    {
-        string root = !string.IsNullOrEmpty(repo)
-            ? repo
-            : Environment.GetEnvironmentVariable(WORK_REPO_ENV_VAR);
+        // For number 1:
+        string key = args[0];
 
-        Console.WriteLine($"\"{repo}/build.sh\" {buildArgs}");
-    }
-
-    static void FnBuildTests(string repo)
-    {
-        return ;
-    }
-
-    static void FnGenerateLayout(string repo)
-    {
-        return ;
+        return 0;
     }
 }
