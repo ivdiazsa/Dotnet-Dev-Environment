@@ -11,22 +11,27 @@ DEVENV_APP="$DEVENV_ENG_PATH/app/DevEnvEngine"
 # Build the .NET app here before anything else.
 dotnet msbuild "$DEVENV_ENG_PATH/DevEnvEngine.csproj" -t:BuildApp
 
+# ENHANCEMENT ITEMS:
+#
+# - Add a short but comprehensive help message about all the commands.
+# - Make 'addrepo' also call 'setrepo' if $WORK_REPO is empty or unset.
+
 function addrepo {
-    local new_repo_kvp;
+    local addrepo_output;
     local devenv_code;
 
-    new_repo_kvp=$($DEVENV_APP add_repo "$@")
+    addrepo_output=$($DEVENV_APP add_repo "$@")
     devenv_code=$?
 
     if [[ "$devenv_code" != "0" ]]; then
-        echo $new_repo_kvp
+        echo $addrepo_output
         return -1
     fi
 
     if [[ -z "$DEV_REPOS" ]]; then
-        export DEV_REPOS="$new_repo_kvp"
+        export DEV_REPOS="$addrepo_output"
     else
-        export DEV_REPOS="$DEV_REPOS:$new_repo_kvp"
+        export DEV_REPOS="$DEV_REPOS:$addrepo_output"
     fi
 }
 
@@ -35,11 +40,24 @@ function listrepos {
 }
 
 function setrepo {
-    echo 'Set_Repo under construction!'
+    local setrepo_output;
+    local devenv_code;
+
+    setrepo_output=$($DEVENV_APP set_repo "$@")
+    devenv_code=$?
+
+    if [[ "$devenv_code" != "0" ]]; then
+        echo $setrepo_output
+        return -1
+    fi
+
+    export WORK_REPO="$setrepo_output"
 }
 
 function buildsubsets {
-    echo 'Build_Subsets under construction!'
+    local buildsubsets_output;
+    buildsubsets_output=$($DEVENV_APP build_subsets "$@")
+    echo $buildsubsets_output | bash
 }
 
 function buildtests {
@@ -47,5 +65,7 @@ function buildtests {
 }
 
 function generatelayout {
-    echo 'Generate_Layout under construction!'
+    local generatelayout_output;
+    generatelayout_output=$($DEVENV_APP build_subsets "$@")
+    echo $generatelayout_output | bash
 }
