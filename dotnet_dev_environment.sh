@@ -58,6 +58,36 @@ function setrepo {
     export WORK_REPO="$setrepo_output"
 }
 
+function buildsubsets {
+    local buildsubsets_output;
+    local devenv_code;
+
+    buildsubsets_output=$($DEVENV_APP build_subsets "$@")
+    devenv_code=$?
+
+    if [[ "$devenv_code" != "0" ]]; then
+        echo $buildsubsets_output
+        return -1;
+    fi
+
+    echo $buildsubsets_output | bash
+}
+
+function generatelayout {
+    local generatelayout_output;
+    local devenv_code;
+
+    generatelayout_output=$($DEVENV_APP generate_layout "$@")
+    devenv_code=$?
+
+    if [[ "$devenv_code" != "0" ]]; then
+        echo $generatelayout_output
+        return -1;
+    fi
+
+    echo $generatelayout_output | bash
+}
+
 function clearworkspace {
     export DEV_REPOS=""
     export WORK_REPO=""

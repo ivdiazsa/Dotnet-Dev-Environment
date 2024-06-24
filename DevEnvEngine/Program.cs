@@ -32,13 +32,13 @@ public class Program
                 exitCode = DevEnvEngine.FnSetRepo(args[1..]);
                 break;
 
-            // case "build_subsets":
-            //     DevEnv.FnBuildSubsets(args[1..]);
-            //     break;
+            case "build_subsets":
+                exitCode = DevEnvEngine.FnBuildSubsets(args[1..]);
+                break;
 
-            // case "generate_layout":
-            //     DevEnv.FnGenerateLayout(args[1..]);
-            //     break;
+            case "generate_layout":
+                exitCode = DevEnvEngine.FnGenerateLayout(args[1..]);
+                break;
 
             default:
                 Console.WriteLine($"Command '{command}' was not recognized.");

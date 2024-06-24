@@ -116,4 +116,68 @@ internal static class DevEnvEngine
         Console.WriteLine(repoPath);
         return 0;
     }
+
+    /// <summary>
+    /// </summary>
+
+    public static int FnBuildSubsets(string[] args)
+    {
+        return BuildRuntimeRepo("mainsubsets", args);
+    }
+
+    /// <summary>
+    /// </summary>
+
+    public static int FnGenerateLayout(string[] args)
+    {
+        return BuildRuntimeRepo("clrtestslayout", args);
+    }
+
+    /// <summary>
+    /// </summary>
+
+    private static int BuildRuntimeRepo(string component, string[] args)
+    {
+        string workRepo = string.Empty;
+        string buildCmdLine = string.Empty;
+        int scriptArgsStart = 0;
+
+        if (args.Length > 0 && args[0].StartsWith("--repo="))
+        {
+            workRepo = Path.GetFullPath(args[0].Split('=')[1]);
+            scriptArgsStart = 1;
+        }
+        else
+        {
+            workRepo = Environment.GetEnvironmentVariable(WORK_REPO_ENV_VAR);
+        }
+
+        if (string.IsNullOrWhiteSpace(workRepo))
+        {
+            Console.WriteLine("There is no specified repo to build. Make sure to"
+                              + " either pass it with the '--repo=' flag, or set"
+                              + " the WORK_REPO env var with 'setrepo'.");
+            return -1;
+        }
+
+        string buildArgs = string.Join(' ', args[scriptArgsStart..]);
+
+        if (!string.IsNullOrWhiteSpace(buildArgs))
+            buildArgs = $" {buildArgs}";
+
+        switch (component)
+        {
+            case "mainsubsets":
+                buildCmdLine = $"{workRepo}/build.sh{buildArgs}";
+                break;
+
+            case "clrtestslayout":
+                buildCmdLine = $"{workRepo}/src/build.sh -generatelayoutonly"
+                             + $"{buildArgs}";
+                break;
+        }
+
+        Console.WriteLine(buildCmdLine);
+        return 0;
+    }
 }
