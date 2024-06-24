@@ -1,7 +1,12 @@
 #!/usr/bin/bash
 
-export DEV_REPOS=""
-export WORK_REPO=""
+# Other ideas I need:
+# Find test.
+# Run test.
+
+#############################
+# Build and Setup the DevEnv
+#############################
 
 SOURCING_PATH="$(cd -- \"$(dirname \"${BASH_SOURCE[0]}\")\" > /dev/null 2>&1 ; pwd -P)"
 SCRIPT_PATH="$SOURCING_PATH/$(dirname ${BASH_SOURCE[0]})"
@@ -9,7 +14,41 @@ DEVENV_ENG_PATH="$SCRIPT_PATH/DevEnvEngine"
 DEVENV_APP="$DEVENV_ENG_PATH/app/DevEnvEngine"
 
 # Build the .NET app here before anything else.
+echo 'Building the Dev Env...'
 dotnet msbuild "$DEVENV_ENG_PATH/DevEnvEngine.csproj" -t:BuildApp
+
+if [[ "$?" != "0" ]]; then
+    echo 'There was a problem building the dev environment. Check the C# failure.'
+    return -1
+fi
+
+##############################
+# Environment Variables Setup
+##############################
+
+export DEV_REPOS=""
+export WORK_REPO=""
+export CORE_ROOT=""
+export TEST_ARTIFACTS=""
+
+echo -e '\nSetting architecture to DEV_ARCH...'
+export DEV_ARCH=$($DEVENV_APP arch_setup)
+echo "DEV_ARCH environment variable was set to '$DEV_ARCH'. You can always export \
+a different value manually should you require it."
+
+echo -e '\nSetting operating system to DEV_OS...'
+export DEV_OS=$($DEVENV_APP os_setup)
+echo "DEV_OS environment variable was set to '$DEV_OS'. You can always export \
+a different value manually should you require it."
+
+if [[ ! -z "$1" ]]; then
+    echo -e "\nSetting configuration '$1' to DEV_CONFIGURATION..."
+    export DEV_CONFIGURATION="$1"
+fi
+
+############################
+# DevEnv Calling Functions!
+############################
 
 function devenvhelp {
     echo 'DevEnv Help under construction!'
@@ -36,6 +75,11 @@ function addrepo {
     if [[ -z "$WORK_REPO" ]]; then
         local info=($(echo $addrepo_output | tr "," "\n"))
         export WORK_REPO="${info[1]}"
+    fi
+
+    if [[ ! -z "$DEV_CONFIGURATION" ]]; then
+        export TEST_ARTIFACTS="$WORK_REPO/artifacts/tests/coreclr/$DEV_OS.$DEV_ARCH.$DEV_CONFIGURATION"
+        export CORE_ROOT="$TEST_ARTIFACTS/Tests/Core_Root"
     fi
 }
 
@@ -94,6 +138,11 @@ function buildclrtests {
     buildruntimerepo "build_clr_tests" "$@"
 }
 
+function setartifactspath {
+    export TEST_ARTIFACTS="$WORK_REPO/artifacts/tests/coreclr/$DEV_OS.$DEV_ARCH.$DEV_CONFIGURATION"
+    export CORE_ROOT="$TEST_ARTIFACTS/Tests/Core_Root"
+}
+
 function activerepo {
     if [[ -z "$WORK_REPO" ]]; then
         echo 'No currently active repo.'
@@ -105,6 +154,7 @@ function activerepo {
 function clearworkspace {
     export DEV_REPOS=""
     export WORK_REPO=""
+    export CORE_ROOT=""
 }
 
 function cdrepo {

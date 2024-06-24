@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using DevEnv;
 
 // ENHANCEMENT IDEAS:
@@ -20,6 +21,14 @@ public class Program
 
         switch (command)
         {
+            case "arch_setup":
+                SetupArch();
+                break;
+
+            case "os_setup":
+                SetupOS();
+                break;
+
             case "add_repo":
                 exitCode = DevEnvEngine.FnAddRepo(args[1..]);
                 break;
@@ -51,5 +60,35 @@ public class Program
         }
 
         return exitCode;
+    }
+
+    private static void SetupArch()
+    {
+        Architecture arch = RuntimeInformation.OSArchitecture;
+        Console.WriteLine(arch.ToString().ToLower());
+    }
+
+    private static void SetupOS()
+    {
+        PlatformID os = Environment.OSVersion.Platform;
+
+        switch (os)
+        {
+            case PlatformID.Win32NT:
+                Console.WriteLine("windows");
+                break;
+
+            case PlatformID.MacOSX:
+                Console.WriteLine("osx");
+                break;
+
+            case PlatformID.Unix:
+                Console.WriteLine("linux");
+                break;
+
+            default:
+                Console.WriteLine("other");
+                break;
+        }
     }
 }

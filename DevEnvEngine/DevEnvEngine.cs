@@ -147,7 +147,6 @@ internal static class DevEnvEngine
     private static int BuildRuntimeRepo(string component, string[] args)
     {
         string workRepo = string.Empty;
-        string buildCmdLine = string.Empty;
         int scriptArgsStart = 0;
 
         if (args.Length > 0 && args[0].StartsWith("--repo="))
@@ -168,6 +167,8 @@ internal static class DevEnvEngine
             return -1;
         }
 
+        string scriptPath = string.Empty;
+        string buildCmdLine = string.Empty;
         string buildArgs = string.Join(' ', args[scriptArgsStart..]);
 
         if (!string.IsNullOrWhiteSpace(buildArgs))
@@ -176,16 +177,18 @@ internal static class DevEnvEngine
         switch (component)
         {
             case "mainsubsets":
-                buildCmdLine = $"{workRepo}/build.sh{buildArgs}";
+                scriptPath = Path.Join(workRepo, "build.sh");
+                buildCmdLine = $"{scriptPath}{buildArgs}";
                 break;
 
             case "clrtests":
-                buildCmdLine = $"{workRepo}/src/tests/build.sh{buildArgs}";
+                scriptPath = Path.Join(workRepo, "src", "tests", "build.sh");
+                buildCmdLine = $"{scriptPath}{buildArgs}";
                 break;
 
             case "clrtestslayout":
-                buildCmdLine = $"{workRepo}/src/tests/build.sh -generatelayoutonly"
-                             + $"{buildArgs}";
+                scriptPath = Path.Join(workRepo, "src", "tests", "build.sh");
+                buildCmdLine = $"{scriptPath} -generatelayoutonly{buildArgs}";
                 break;
         }
 
