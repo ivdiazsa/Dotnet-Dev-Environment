@@ -1,13 +1,23 @@
 using System;
 using System.IO;
-using System.Linq;
 
-namespace DevEnvEngine;
+namespace DevEnv;
 
 internal static class DevEnvEngine
 {
-    const string DEV_REPOS_ENV_VAR = "DEV_REPOS";
-    const string WORK_REPO_ENV_VAR = "WORK_REPO";
+    internal const string DEV_REPOS_ENV_VAR = "DEV_REPOS";
+    internal const string WORK_REPO_ENV_VAR = "WORK_REPO";
+
+    /// <summary>
+    /// Parses a tuple containing an identifier that will be used as key, and a
+    /// path to a local repository. Then, it prints it in a 'key,path' format,
+    /// which the shell reads and appends it to the DEV_REPOS environment variable.
+    /// </summary>
+    /// <remarks>
+    /// If more than two parameters are received, then the third one and on are
+    /// just ignored. If less than two, then an error is returned.
+    /// </remarks>
+    /// <returns>0 if all good, otherwise -1.</returns>
 
     public static int FnAddRepo(string[] args)
     {
@@ -18,8 +28,6 @@ internal static class DevEnvEngine
             return -1;
         }
 
-        // FIXME: Error out if the given key already exists.
-
         string key = args[0].ToLower();
         string path = Path.GetFullPath(args[1]);
 
@@ -29,9 +37,25 @@ internal static class DevEnvEngine
             return -1;
         }
 
+        if (DevEnvUtils.IsRepoRegistered(key))
+        {
+            Console.WriteLine("There is already a repo registered with the given"
+                              + $" key '{key}'.");
+            return -1;
+        }
+
         Console.WriteLine($"{key},\"{path}\"");
         return 0;
     }
+
+    /// <summary>
+    /// Reads and parses the contents of the DEV_REPOS environment variable, and
+    /// prints them in a friendly-readable way. Will use a table in the future.
+    /// </summary>
+    /// <remarks>
+    /// Displays a brief message indicating no repos have been registered if said
+    /// case occurs.
+    /// </remarks>
 
     public static void FnListRepos()
     {
@@ -45,9 +69,9 @@ internal static class DevEnvEngine
 
         // The DEV_REPOS environment variable stores the added repos in a similar
         // fashion to Unix's PATH environment variable. Each entry follows the
-        // 'key,path' format, and a colon ':' is used as the entries separator.
+        // 'key,path' format, and a semi-colon ';' is used as the entries separator.
 
-        foreach (string r in repos.Split(':'))
+        foreach (string r in repos.Split(';'))
         {
             // Each entry is already divided by a comma ',', but we do this
             // processing, just to print them in a prettier format. Coming soon,
@@ -60,72 +84,36 @@ internal static class DevEnvEngine
         }
     }
 
+    /// <summary>
+    /// Looks up the received key in the DEV_REPOS environment variable, and then
+    /// prints the path mapped to said key. The shell then sets this path to the
+    /// WORK_REPO environment variable.
+    /// </summary>
+    /// <remarks>
+    /// If more than two parameters are received, then the third one and on are
+    /// just ignored. If less than two, then an error is returned.
+    /// </remarks>
+    /// <returns>0 if all good, -1 otherwise.</returns>
+
     public static int FnSetRepo(string[] args)
     {
         if (args.Length < 1)
         {
-            Console.WriteLine("The path to the repo, or its key if it has been"
-                              + " added previously with 'addrepo', is required.");
+            Console.WriteLine("A string representing the key mapping the repo in"
+                              + " DEV_REPOS, is required to set it.");
             return -1;
         }
 
-        // If the parameter we received is an existing path, then we assume that's
-        // the repo source the user wants to set as active. Otherwise, we treat it
-        // as a key to search in the list of added repos.
-
-        if (Directory.Exists(args[0]))
-        {
-            Console.WriteLine(args[0]);
-            return 0;
-        }
-
-        string reposStr = Environment.GetEnvironmentVariable(DEV_REPOS_ENV_VAR);
-
-        if (string.IsNullOrEmpty(reposStr))
-        {
-            Console.WriteLine("No repos have been added yet, so finding by key"
-                              + " is not possible right now. Try registering it"
-                              + " first by calling 'addrepo' with its data.");
-            return -1;
-        }
-
-        string[] repoInfo = reposStr.Split(':')
-                                    .Select(r => r.Split(','))
-                                    .FirstOrDefault(rInfo => rInfo[0] == args[0]);
-
-        string repoPath = repoInfo is null ? string.Empty : repoInfo[1];
+        string repoPath = DevEnvUtils.GetRepoFromKey(args[0]);
 
         if (string.IsNullOrEmpty(repoPath))
         {
-            Console.WriteLine($"The given key '{args[0]}' was not found in"
-                              + " the DEV_REPOS env var. Make sure to add it"
-                              + " first by calling 'addrepo' with its data.");
+            Console.WriteLine($"The received key '{args[0]}' was not found. Make"
+                              + " sure to first register it with addrepo.");
             return -1;
         }
 
         Console.WriteLine(repoPath);
         return 0;
-    }
-
-    public static void FnBuildSubsets(string[] args)
-    {
-        string workRepo = Environment.GetEnvironmentVariable(WORK_REPO_ENV_VAR);
-        string buildArgs = string.Join(' ', args);
-
-        if (!string.IsNullOrWhiteSpace(buildArgs))
-            buildArgs = $" {buildArgs}";
-
-        Console.WriteLine($"{workRepo}/build.sh{buildArgs}");
-    }
-
-    public static void FnGenerateLayout(string[] args)
-    {
-        string workRepo = Environment.GetEnvironmentVariable(WORK_REPO_ENV_VAR);
-        string buildArgs = string.Join(' ', args);
-
-        if (!string.IsNullOrWhiteSpace(buildArgs))
-            buildArgs = $" {buildArgs}";
-
-        Console.WriteLine($"{workRepo}/src/tests/build.sh{buildArgs}");
     }
 }

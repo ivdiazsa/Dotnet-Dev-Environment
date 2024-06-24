@@ -1,6 +1,5 @@
 using System;
-
-using DevEnv = DevEnvEngine.DevEnvEngine;
+using DevEnv;
 
 // ENHANCEMENT IDEAS:
 //
@@ -22,24 +21,24 @@ public class Program
         switch (command)
         {
             case "add_repo":
-                exitCode = DevEnv.FnAddRepo(args[1..]);
+                exitCode = DevEnvEngine.FnAddRepo(args[1..]);
                 break;
 
             case "list_repos":
-                DevEnv.FnListRepos();
+                DevEnvEngine.FnListRepos();
                 break;
 
             case "set_repo":
-                exitCode = DevEnv.FnSetRepo(args[1..]);
+                exitCode = DevEnvEngine.FnSetRepo(args[1..]);
                 break;
 
-            case "build_subsets":
-                DevEnv.FnBuildSubsets(args[1..]);
-                break;
+            // case "build_subsets":
+            //     DevEnv.FnBuildSubsets(args[1..]);
+            //     break;
 
-            case "generate_layout":
-                DevEnv.FnGenerateLayout(args[1..]);
-                break;
+            // case "generate_layout":
+            //     DevEnv.FnGenerateLayout(args[1..]);
+            //     break;
 
             default:
                 Console.WriteLine($"Command '{command}' was not recognized.");
