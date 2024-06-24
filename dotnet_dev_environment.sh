@@ -24,7 +24,7 @@ function addrepo {
 
     if [[ "$devenv_code" != "0" ]]; then
         echo $addrepo_output
-        return -1
+        return $devenv_code
     fi
 
     if [[ -z "$DEV_REPOS" ]]; then
@@ -52,43 +52,73 @@ function setrepo {
 
     if [[ "$devenv_code" != "0" ]]; then
         echo $setrepo_output
-        return -1
+        return $devenv_code
     fi
 
     export WORK_REPO="$setrepo_output"
 }
 
-function buildsubsets {
-    local buildsubsets_output;
+# Don't call this directly. Use the function that best suits your needs:
+# - buildsubsets
+# - generatelayout
+# - buildclrtests
+
+function buildruntimerepo {
+    local buildcmd_output;
     local devenv_code;
 
-    buildsubsets_output=$($DEVENV_APP build_subsets "$@")
+    local build_args=($@)
+    local build_type="${build_args[0]}"
+    build_args=("${build_args[@]:1}")
+
+    buildcmd_output=$($DEVENV_APP $build_type "${build_args[@]}")
     devenv_code=$?
 
     if [[ "$devenv_code" != "0" ]]; then
-        echo $buildsubsets_output
-        return -1;
+        echo $buildcmd_output
+        return $devenv_code
     fi
 
-    echo $buildsubsets_output | bash
+    echo $buildcmd_output | bash
+}
+
+function buildsubsets {
+    buildruntimerepo "build_subsets" "$@"
 }
 
 function generatelayout {
-    local generatelayout_output;
-    local devenv_code;
+    buildruntimerepo "generate_layout" "$@"
+}
 
-    generatelayout_output=$($DEVENV_APP generate_layout "$@")
-    devenv_code=$?
+function buildclrtests {
+    buildruntimerepo "build_clr_tests" "$@"
+}
 
-    if [[ "$devenv_code" != "0" ]]; then
-        echo $generatelayout_output
-        return -1;
+function activerepo {
+    if [[ -z "$WORK_REPO" ]]; then
+        echo 'No currently active repo.'
+    else
+        echo $WORK_REPO
     fi
-
-    echo $generatelayout_output | bash
 }
 
 function clearworkspace {
     export DEV_REPOS=""
     export WORK_REPO=""
+}
+
+function cdrepo {
+    if [[ -z "$WORK_REPO" ]]; then
+        echo 'No currently active repo.'
+    else
+        cd $WORK_REPO
+    fi
+}
+
+function cdtests {
+    if [[ -z "$WORK_REPO" ]]; then
+        echo 'No currently active repo.'
+    else
+        cd $WORK_REPO/src/tests
+    fi
 }

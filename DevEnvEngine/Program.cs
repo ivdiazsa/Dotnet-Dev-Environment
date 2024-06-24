@@ -40,6 +40,10 @@ public class Program
                 exitCode = DevEnvEngine.FnGenerateLayout(args[1..]);
                 break;
 
+            case "build_clr_tests":
+                exitCode = DevEnvEngine.FnBuildClrTests(args[1..]);
+                break;
+
             default:
                 Console.WriteLine($"Command '{command}' was not recognized.");
                 exitCode = -2;

@@ -44,7 +44,7 @@ internal static class DevEnvEngine
             return -1;
         }
 
-        Console.WriteLine($"{key},\"{path}\"");
+        Console.WriteLine($"{key},{path}");
         return 0;
     }
 
@@ -136,6 +136,14 @@ internal static class DevEnvEngine
     /// <summary>
     /// </summary>
 
+    public static int FnBuildClrTests(string[] args)
+    {
+        return BuildRuntimeRepo("clrtests", args);
+    }
+
+    /// <summary>
+    /// </summary>
+
     private static int BuildRuntimeRepo(string component, string[] args)
     {
         string workRepo = string.Empty;
@@ -171,8 +179,12 @@ internal static class DevEnvEngine
                 buildCmdLine = $"{workRepo}/build.sh{buildArgs}";
                 break;
 
+            case "clrtests":
+                buildCmdLine = $"{workRepo}/src/tests/build.sh{buildArgs}";
+                break;
+
             case "clrtestslayout":
-                buildCmdLine = $"{workRepo}/src/build.sh -generatelayoutonly"
+                buildCmdLine = $"{workRepo}/src/tests/build.sh -generatelayoutonly"
                              + $"{buildArgs}";
                 break;
         }
