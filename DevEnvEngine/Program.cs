@@ -42,7 +42,7 @@ public class Program
                 break;
 
             case "build_subsets":
-                exitCode = DevEnvEngine.FnBuildSubsets(args[1..]);
+                exitCode = DevEnvEngine.FnBuildSubset(args[1..]);
                 break;
 
             case "generate_layout":
@@ -50,7 +50,11 @@ public class Program
                 break;
 
             case "build_clr_tests":
-                exitCode = DevEnvEngine.FnBuildClrTests(args[1..]);
+                exitCode = DevEnvEngine.FnBuildTest(args[1..]);
+                break;
+
+            case "find_test":
+                DevEnvEngine.FnFindTest(args[1..]);
                 break;
 
             default:

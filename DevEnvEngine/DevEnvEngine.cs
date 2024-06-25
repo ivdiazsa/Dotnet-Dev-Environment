@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace DevEnv;
@@ -7,6 +8,11 @@ internal static class DevEnvEngine
 {
     internal const string DEV_REPOS_ENV_VAR = "DEV_REPOS";
     internal const string WORK_REPO_ENV_VAR = "WORK_REPO";
+
+    internal static readonly string BUILD_SCRIPT_NAME =
+        Environment.OSVersion.Platform == PlatformID.Win32NT
+        ? "build.cmd"
+        : "build.sh";
 
     /// <summary>
     /// Parses a tuple containing an identifier that will be used as key, and a
@@ -120,7 +126,7 @@ internal static class DevEnvEngine
     /// <summary>
     /// </summary>
 
-    public static int FnBuildSubsets(string[] args)
+    public static int FnBuildSubset(string[] args)
     {
         return BuildRuntimeRepo("mainsubsets", args);
     }
@@ -136,9 +142,47 @@ internal static class DevEnvEngine
     /// <summary>
     /// </summary>
 
-    public static int FnBuildClrTests(string[] args)
+    public static int FnBuildTest(string[] args)
     {
         return BuildRuntimeRepo("clrtests", args);
+    }
+
+    /// <summary>
+    /// </summary>
+
+    public static void FnFindTest(string[] args)
+    {
+        if (args.Length <= 0)
+        {
+            Console.WriteLine("A test name or wildcard is needed to search for it.");
+            return ;
+        }
+
+        string repo = Environment.GetEnvironmentVariable(WORK_REPO_ENV_VAR);
+
+        if (string.IsNullOrEmpty(repo))
+        {
+            Console.WriteLine("No currently active repo.");
+            return ;
+        }
+
+        string testsPath = Path.Join(repo, "src", "tests");
+
+        foreach (string testPattern in args)
+        {
+            IEnumerable<string> results = Directory.EnumerateFiles(
+                path: testsPath,
+                searchPattern: testPattern,
+                enumerationOptions: new EnumerationOptions
+                {
+                    IgnoreInaccessible = true,
+                    MatchCasing = MatchCasing.CaseInsensitive,
+                    RecurseSubdirectories = true
+                });
+
+            Console.WriteLine($"\nResults matching '{testPattern}':\n");
+            Console.WriteLine(string.Join("\n", results));
+        }
     }
 
     /// <summary>
@@ -177,17 +221,17 @@ internal static class DevEnvEngine
         switch (component)
         {
             case "mainsubsets":
-                scriptPath = Path.Join(workRepo, "build.sh");
+                scriptPath = Path.Join(workRepo, BUILD_SCRIPT_NAME);
                 buildCmdLine = $"{scriptPath}{buildArgs}";
                 break;
 
             case "clrtests":
-                scriptPath = Path.Join(workRepo, "src", "tests", "build.sh");
+                scriptPath = Path.Join(workRepo, "src", "tests", BUILD_SCRIPT_NAME);
                 buildCmdLine = $"{scriptPath}{buildArgs}";
                 break;
 
             case "clrtestslayout":
-                scriptPath = Path.Join(workRepo, "src", "tests", "build.sh");
+                scriptPath = Path.Join(workRepo, "src", "tests", BUILD_SCRIPT_NAME);
                 buildCmdLine = $"{scriptPath} -generatelayoutonly{buildArgs}";
                 break;
         }

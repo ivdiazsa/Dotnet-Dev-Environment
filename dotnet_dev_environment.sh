@@ -128,7 +128,7 @@ function buildruntimerepo {
     echo $buildcmd_output | bash
 }
 
-function buildsubsets {
+function buildsubset {
     buildruntimerepo "build_subsets" "$@"
 }
 
@@ -136,13 +136,17 @@ function generatelayout {
     buildruntimerepo "generate_layout" "$@"
 }
 
-function buildclrtests {
+function buildtest {
     buildruntimerepo "build_clr_tests" "$@"
 }
 
 function setartifactspath {
     export TEST_ARTIFACTS="$WORK_REPO/artifacts/tests/coreclr/$DEV_OS.$DEV_ARCH.$DEV_CONFIGURATION"
     export CORE_ROOT="$TEST_ARTIFACTS/Tests/Core_Root"
+}
+
+function findtest {
+    $DEVENV_APP find_test "$@"
 }
 
 function activerepo {
