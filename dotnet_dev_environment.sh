@@ -33,11 +33,13 @@ export TEST_ARTIFACTS=""
 
 echo -e '\nSetting architecture to DEV_ARCH...'
 export DEV_ARCH=$($DEVENV_APP arch_setup)
+
 echo "DEV_ARCH environment variable was set to '$DEV_ARCH'. You can always export \
 a different value manually should you require it."
 
 echo -e '\nSetting operating system to DEV_OS...'
 export DEV_OS=$($DEVENV_APP os_setup)
+
 echo "DEV_OS environment variable was set to '$DEV_OS'. You can always export \
 a different value manually should you require it."
 
@@ -155,6 +157,7 @@ function clearworkspace {
     export DEV_REPOS=""
     export WORK_REPO=""
     export CORE_ROOT=""
+    export TEST_ARTIFACTS=""
 }
 
 function cdrepo {
