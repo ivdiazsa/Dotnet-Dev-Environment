@@ -3,11 +3,7 @@
     <OutputType>Exe</OutputType>
     <Configuration>Release</Configuration>
     <TargetFramework>net8.0</TargetFramework>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <OutDir>app/</OutDir>
-    <BaseIntermediateOutputPath>obj/</BaseIntermediateOutputPath>
   </PropertyGroup>
 
   <Target Name="BuildApp"

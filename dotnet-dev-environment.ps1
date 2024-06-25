@@ -15,11 +15,11 @@ $devEnvApp = Join-Path $devEnvEngPath 'app' 'DevEnvEngine.exe'
 
 # Build the .NET app here before anything else.
 Write-Output 'Building the Dev Env...'
-dotnet msbuild (Join-Path $devEnvEngPath "DevEnvEngine.csproj")
+& dotnet msbuild (Join-Path $devEnvEngPath "DevEnvEngine.csproj") -t:BuildApp
 
 if ($LASTEXITCODE -ne 0) {
     Write-Output 'There was a problem building the dev environment.' `
-                 + ' Check the C# failure.'
+                 ' Check the C# failure.'
     exit -1
 }
 
@@ -36,13 +36,13 @@ Write-Output "`nSetting architecture to DEV_ARCH..."
 $Env:DEV_ARCH = & $devEnvApp "arch_setup"
 
 Write-Output "DEV_ARCH environment variable was set to '$Env:DEV_ARCH'. You can" `
-             + " always export a different value manually, should you require it."
+             " always export a different value manually, should you require it."
 
 Write-Output "`nSetting architecture to DEV_OS..."
 $Env:DEV_OS = & $devEnvApp "os_setup"
 
 Write-Output "DEV_OS environment variable was set to '$Env:DEV_OS'. You can" `
-             + " always export a different value manually, should you require it."
+             " always export a different value manually, should you require it."
 
 if ($args.Length > 0) {
     Write-Output "`nSetting configuration '$($args[0])' to DEV_CONFIGURATION..."
