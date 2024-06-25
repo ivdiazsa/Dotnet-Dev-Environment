@@ -122,7 +122,7 @@ function Build-RuntimeRepo([string[]]$Params) {
         Write-Output $buildCmdOutput
         return $devEnvCode
     }
-    & $buildCmdOutput
+    Invoke-Expression $buildCmdOutput
 }
 
 function Build-Subsets([string[]]$Params) {
