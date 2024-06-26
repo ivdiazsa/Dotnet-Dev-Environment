@@ -9,10 +9,21 @@ internal static class DevEnvEngine
     internal const string DEV_REPOS_ENV_VAR = "DEV_REPOS";
     internal const string WORK_REPO_ENV_VAR = "WORK_REPO";
 
+    internal const string DEV_ARCH_ENV_VAR = "DEV_ARCH";
+    internal const string DEV_OS_ENV_VAR = "DEV_OS";
+    internal const string DEV_CONFIGURATION_ENV_VAR = "DEV_CONFIGURATION";
+
     internal static readonly string BUILD_SCRIPT_NAME =
         Environment.OSVersion.Platform == PlatformID.Win32NT
-        ? "build.cmd"
-        : "build.sh";
+        ? "build.cmd" : "build.sh";
+
+    internal static readonly string MAIN_SCRIPT_FLAG_PREFIX =
+        Environment.OSVersion.Platform == PlatformID.Win32NT
+        ? "-" : "--";
+
+    internal static readonly string TEST_SCRIPT_FLAG_PREFIX =
+        Environment.OSVersion.Platform == PlatformID.Win32NT
+        ? string.Empty : "-";
 
     /// <summary>
     /// Parses a tuple containing an identifier that will be used as key, and a
@@ -169,6 +180,48 @@ internal static class DevEnvEngine
             Console.WriteLine($"\nResults matching '{testPattern}':\n");
             Console.WriteLine(string.Join("\n", results));
         }
+    }
+
+    /// <summary>
+    /// Docs go here.
+    /// </summary>
+
+    public static int FnBuildSubset(string[] args)
+    {
+        if (args.Length <= 0 || (args.Length == 1 && args[0].StartsWith("--repo=")))
+        {
+            Console.WriteLine("A subset name or expression is needed for running"
+                              + " the build.");
+            return -1;
+        }
+
+        int subsetIndex = 0;
+        List<string> argsList = new List<string>();
+        // Console.WriteLine($"{subsetIndex},{args.Length}");
+
+        if (args[0].StartsWith("--repo="))
+        {
+            // Console.WriteLine("Found repo flag");
+            argsList.Add(args[0]);
+            subsetIndex = 1;
+        }
+
+        // Console.WriteLine($"{subsetIndex},{args.Length}");
+        string arch = Environment.GetEnvironmentVariable(DEV_ARCH_ENV_VAR);
+        string os = Environment.GetEnvironmentVariable(DEV_OS_ENV_VAR);
+        string config = Environment.GetEnvironmentVariable(DEV_CONFIGURATION_ENV_VAR);
+
+        // foreach (string s in args)
+        //     Console.WriteLine($"ARG: {s}");
+
+        // Console.WriteLine($"{args[subsetIndex]}");
+
+        argsList.Add($"{MAIN_SCRIPT_FLAG_PREFIX}subset {args[subsetIndex]}");
+        argsList.Add($"{MAIN_SCRIPT_FLAG_PREFIX}configuration {config}");
+        argsList.Add($"{MAIN_SCRIPT_FLAG_PREFIX}arch {arch}");
+        argsList.Add($"{MAIN_SCRIPT_FLAG_PREFIX}os {os}");
+
+        return FnRepoMainScript(argsList.ToArray());
     }
 
     /// <summary>

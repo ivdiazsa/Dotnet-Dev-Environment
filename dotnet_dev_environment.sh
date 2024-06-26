@@ -46,11 +46,16 @@ a different value manually should you require it."
 if [[ ! -z "$1" ]]; then
     echo -e "\nSetting configuration '$1' to DEV_CONFIGURATION..."
     export DEV_CONFIGURATION="$1"
+else
+    echo -e "\nSetting configuration 'Debug' to DEV_CONFIGURATION..."
+    export DEV_CONFIGURATION="Debug"
 fi
 
 ############################
 # DevEnv Calling Functions!
 ############################
+
+# Help and Repos Setup
 
 function devenvhelp {
     echo 'DevEnv Help under construction!'
@@ -104,6 +109,8 @@ function setrepo {
     export WORK_REPO="$setrepo_output"
 }
 
+# Build and Repo Actions
+
 # Don't call this directly. Use the function that best suits your needs:
 # - buildsubsets
 # - generatelayout
@@ -114,10 +121,10 @@ function buildruntimerepo {
     local devenv_code;
 
     local build_args=($@)
-    local build_type="${build_args[0]}"
+    local command="${build_args[0]}"
     build_args=("${build_args[@]:1}")
 
-    buildcmd_output=$($DEVENV_APP $build_type "${build_args[@]}")
+    buildcmd_output=$($DEVENV_APP $command "${build_args[@]}")
     devenv_code=$?
 
     if [[ "$devenv_code" != "0" ]]; then
@@ -125,6 +132,7 @@ function buildruntimerepo {
         return $devenv_code
     fi
 
+    echo -e "Running command '$buildcmd_output'\n"
     echo $buildcmd_output | bash
 }
 
@@ -132,21 +140,27 @@ function repomainscript {
     buildruntimerepo "repo_main_script" "$@"
 }
 
-function generatelayout {
-    buildruntimerepo "generate_layout" "$@"
-}
-
 function testsbuildscript {
     buildruntimerepo "tests_build_script" "$@"
 }
 
-function setartifactspath {
-    export TEST_ARTIFACTS="$WORK_REPO/artifacts/tests/coreclr/$DEV_OS.$DEV_ARCH.$DEV_CONFIGURATION"
-    export CORE_ROOT="$TEST_ARTIFACTS/Tests/Core_Root"
+function buildsubset {
+    buildruntimerepo "build_subset" "$@"
+}
+
+function buildtest {
+    echo 'Build Test under construction!'
 }
 
 function findtest {
     $DEVENV_APP find_test "$@"
+}
+
+# Other DevEnv Utilities. Mainly for the Shell.
+
+function setartifactspath {
+    export TEST_ARTIFACTS="$WORK_REPO/artifacts/tests/coreclr/$DEV_OS.$DEV_ARCH.$DEV_CONFIGURATION"
+    export CORE_ROOT="$TEST_ARTIFACTS/Tests/Core_Root"
 }
 
 function activerepo {
