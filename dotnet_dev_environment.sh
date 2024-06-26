@@ -128,16 +128,16 @@ function buildruntimerepo {
     echo $buildcmd_output | bash
 }
 
-function buildsubset {
-    buildruntimerepo "build_subsets" "$@"
+function repomainscript {
+    buildruntimerepo "repo_main_script" "$@"
 }
 
 function generatelayout {
     buildruntimerepo "generate_layout" "$@"
 }
 
-function buildtest {
-    buildruntimerepo "build_clr_tests" "$@"
+function testsbuildscript {
+    buildruntimerepo "tests_build_script" "$@"
 }
 
 function setartifactspath {

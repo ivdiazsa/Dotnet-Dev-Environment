@@ -124,31 +124,17 @@ internal static class DevEnvEngine
     }
 
     /// <summary>
+    /// Looks up the test(s) that match the provided wildcards in 'src/tests/*'.
+    /// It will return any file that matches, as we can't know beforehand whether
+    /// the user wants the cs, csproj, or what specific kind of file. Working on
+    /// designing a solution for that currently.
     /// </summary>
-
-    public static int FnBuildSubset(string[] args)
-    {
-        return BuildRuntimeRepo("mainsubsets", args);
-    }
-
-    /// <summary>
-    /// </summary>
-
-    public static int FnGenerateLayout(string[] args)
-    {
-        return BuildRuntimeRepo("clrtestslayout", args);
-    }
-
-    /// <summary>
-    /// </summary>
-
-    public static int FnBuildTest(string[] args)
-    {
-        return BuildRuntimeRepo("clrtests", args);
-    }
-
-    /// <summary>
-    /// </summary>
+    /// <remarks>
+    /// If more than one wildcard is provided, then the results of each one will
+    /// be displayed in their own groups for cleaner and easier readability. This
+    /// function's search is also case insensitive, and unreadable files for whatever
+    /// reason (permissions being the most common), are just ignored.
+    /// </remarks>
 
     public static void FnFindTest(string[] args)
     {
@@ -186,9 +172,36 @@ internal static class DevEnvEngine
     }
 
     /// <summary>
+    /// Forms the call to the build script located at the root of the runtime repo
+    /// clone specified by the environment variable 'WORK_REPO', or the --repo= flag.
+    /// Then, it prints the constructed command for the shell to execute.
+    /// </summary>
+    /// <returns>0 if all good, -1 otherwise.</returns>
+
+    public static int FnRepoMainScript(string[] args)
+    {
+        return RunRuntimeRepoScripts("main", args);
+    }
+
+    /// <summary>
+    /// Forms the call to the build script located in the path 'src/tests' of the
+    /// runtime repo clone specified by the environment variable 'WORK_REPO', or
+    /// the --repo= flag.
+    /// Then, it prints the constructed command for the shell to execute.
+    /// </summary>
+    /// <returns>0 if all good, -1 otherwise.</returns>
+
+    public static int FnTestsBuildScript(string[] args)
+    {
+        return RunRuntimeRepoScripts("clrtests", args);
+    }
+
+    /// <summary>
+    /// Helper function to do the common lifting of FnRepoMainScript()
+    /// and FnTestsBuildScript().
     /// </summary>
 
-    private static int BuildRuntimeRepo(string component, string[] args)
+    private static int RunRuntimeRepoScripts(string component, string[] args)
     {
         string workRepo = string.Empty;
         int scriptArgsStart = 0;
@@ -212,7 +225,6 @@ internal static class DevEnvEngine
         }
 
         string scriptPath = string.Empty;
-        string buildCmdLine = string.Empty;
         string buildArgs = string.Join(' ', args[scriptArgsStart..]);
 
         if (!string.IsNullOrWhiteSpace(buildArgs))
@@ -220,23 +232,21 @@ internal static class DevEnvEngine
 
         switch (component)
         {
-            case "mainsubsets":
+            case "main":
                 scriptPath = Path.Join(workRepo, BUILD_SCRIPT_NAME);
-                buildCmdLine = $"{scriptPath}{buildArgs}";
                 break;
 
             case "clrtests":
                 scriptPath = Path.Join(workRepo, "src", "tests", BUILD_SCRIPT_NAME);
-                buildCmdLine = $"{scriptPath}{buildArgs}";
                 break;
 
-            case "clrtestslayout":
-                scriptPath = Path.Join(workRepo, "src", "tests", BUILD_SCRIPT_NAME);
-                buildCmdLine = $"{scriptPath} -generatelayoutonly{buildArgs}";
-                break;
+            default:
+                Console.WriteLine("RunRuntimeRepoScripts(): Received unrecognized"
+                                  + $" component '{component}'.");
+                return -1;
         }
 
-        Console.WriteLine(buildCmdLine);
+        Console.WriteLine($"{scriptPath}{buildArgs}");
         return 0;
     }
 }

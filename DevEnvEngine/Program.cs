@@ -41,20 +41,20 @@ public class Program
                 exitCode = DevEnvEngine.FnSetRepo(args[1..]);
                 break;
 
-            case "build_subsets":
-                exitCode = DevEnvEngine.FnBuildSubset(args[1..]);
+            case "find_test":
+                DevEnvEngine.FnFindTest(args[1..]);
                 break;
 
             case "generate_layout":
                 exitCode = DevEnvEngine.FnGenerateLayout(args[1..]);
                 break;
 
-            case "build_clr_tests":
-                exitCode = DevEnvEngine.FnBuildTest(args[1..]);
+            case "repo_main_script":
+                exitCode = DevEnvEngine.FnRepoMainScript(args[1..]);
                 break;
 
-            case "find_test":
-                DevEnvEngine.FnFindTest(args[1..]);
+            case "tests_build_script":
+                exitCode = DevEnvEngine.FnTestsBuildScript(args[1..]);
                 break;
 
             default:
