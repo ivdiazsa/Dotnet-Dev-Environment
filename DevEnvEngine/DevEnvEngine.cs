@@ -197,24 +197,16 @@ internal static class DevEnvEngine
 
         int subsetIndex = 0;
         List<string> argsList = new List<string>();
-        // Console.WriteLine($"{subsetIndex},{args.Length}");
 
         if (args[0].StartsWith("--repo="))
         {
-            // Console.WriteLine("Found repo flag");
             argsList.Add(args[0]);
             subsetIndex = 1;
         }
 
-        // Console.WriteLine($"{subsetIndex},{args.Length}");
         string arch = Environment.GetEnvironmentVariable(DEV_ARCH_ENV_VAR);
         string os = Environment.GetEnvironmentVariable(DEV_OS_ENV_VAR);
         string config = Environment.GetEnvironmentVariable(DEV_CONFIGURATION_ENV_VAR);
-
-        // foreach (string s in args)
-        //     Console.WriteLine($"ARG: {s}");
-
-        // Console.WriteLine($"{args[subsetIndex]}");
 
         argsList.Add($"{MAIN_SCRIPT_FLAG_PREFIX}subset {args[subsetIndex]}");
         argsList.Add($"{MAIN_SCRIPT_FLAG_PREFIX}configuration {config}");
@@ -222,6 +214,33 @@ internal static class DevEnvEngine
         argsList.Add($"{MAIN_SCRIPT_FLAG_PREFIX}os {os}");
 
         return FnRepoMainScript(argsList.ToArray());
+    }
+
+    /// <summary>
+    /// Docs go here.
+    /// </summary>
+
+    public static int FnGenerateLayout(string[] args)
+    {
+        List<string> argsList = new List<string>();
+
+        if (args.Length >= 1 && args[0].StartsWith("--repo="))
+        {
+            argsList.Add(args[0]);
+        }
+
+        string arch = Environment.GetEnvironmentVariable(DEV_ARCH_ENV_VAR);
+        string os = Environment.GetEnvironmentVariable(DEV_OS_ENV_VAR);
+        string config = Environment.GetEnvironmentVariable(DEV_CONFIGURATION_ENV_VAR);
+
+        argsList.Add($"{TEST_SCRIPT_FLAG_PREFIX}{arch}");
+        argsList.Add($"{TEST_SCRIPT_FLAG_PREFIX}{config}");
+        argsList.Add($"{TEST_SCRIPT_FLAG_PREFIX}generatelayoutonly");
+
+        if (!(os == "windows"))
+            argsList.Add($"{TEST_SCRIPT_FLAG_PREFIX}os {os}");
+
+        return FnTestsBuildScript(argsList.ToArray());
     }
 
     /// <summary>

@@ -111,6 +111,10 @@ function setrepo {
 
 # Build and Repo Actions
 
+function findtest {
+    $DEVENV_APP find_test "$@"
+}
+
 # Don't call this directly. Use the function that best suits your needs:
 # - buildsubsets
 # - generatelayout
@@ -152,8 +156,8 @@ function buildtest {
     echo 'Build Test under construction!'
 }
 
-function findtest {
-    $DEVENV_APP find_test "$@"
+function generatelayout {
+    buildruntimerepo "generate_layout" "$@"
 }
 
 # Other DevEnv Utilities. Mainly for the Shell.
